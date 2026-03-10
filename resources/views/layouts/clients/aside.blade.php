@@ -11,13 +11,33 @@
                 <i class="bi bi-house-door"></i>
                 My Properties
             </a>
-            <a class="nav-link {{ request()->routeIs('landlord.chats*') ? 'active' : '' }}"
-               href="{{ route('landlord.dashboard') }}#chats">
+            <a class="nav-link {{ request()->routeIs('chatify') || request()->is('chatify*') ? 'active' : '' }}"
+               href="{{ route('chatify') }}">
                 <i class="bi bi-chat-dots"></i>
                 Chats
             </a>
             <hr class="my-2">
         @endrole
+
+        @role('tenant')
+            <a class="nav-link {{ request()->routeIs('tenant.dashboard') ? 'active' : '' }}"
+               href="{{ route('tenant.dashboard') }}">
+                <i class="bi bi-grid-1x2"></i>
+                Dashboard
+            </a>
+            <a class="nav-link {{ request()->routeIs('rentals.*') ? 'active' : '' }}"
+               href="{{ route('rentals.index') }}">
+                <i class="bi bi-search"></i>
+                Browse rentals
+            </a>
+            <a class="nav-link {{ request()->routeIs('chatify') || request()->is('chatify*') ? 'active' : '' }}"
+               href="{{ route('chatify') }}">
+                <i class="bi bi-chat-dots"></i>
+                Chats
+            </a>
+            <hr class="my-2">
+        @endrole
+
         <a class="nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}"
            href="{{ route('profile.edit') }}">
             <i class="bi bi-person"></i>

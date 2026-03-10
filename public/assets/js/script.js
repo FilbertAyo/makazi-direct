@@ -55,73 +55,72 @@
 
   $(document).ready(function () {
 
-
-    // swiper
-    var swiper = new Swiper(".residence-swiper", {
-      slidesPerView: 3,
-      spaceBetween: 30,
-      freeMode: true,
-      navigation: {
-        nextEl: ".residence-swiper-next",
-        prevEl: ".residence-swiper-prev",
-      },
-      pagination: {
-        el: ".swiper-pagination",
-        clickable: true,
-      },
-      breakpoints: {
-        300: {
-          slidesPerView: 1,
-          spaceBetween: 20,
+    if (typeof Swiper !== 'undefined') {
+      var swiper = new Swiper(".residence-swiper", {
+        slidesPerView: 3,
+        spaceBetween: 30,
+        freeMode: true,
+        navigation: {
+          nextEl: ".residence-swiper-next",
+          prevEl: ".residence-swiper-prev",
         },
-        768: {
-          slidesPerView: 2,
-          spaceBetween: 30,
+        pagination: {
+          el: ".swiper-pagination",
+          clickable: true,
         },
-        1024: {
-          slidesPerView: 3,
-          spaceBetween: 30,
+        breakpoints: {
+          300: {
+            slidesPerView: 1,
+            spaceBetween: 20,
+          },
+          768: {
+            slidesPerView: 2,
+            spaceBetween: 30,
+          },
+          1024: {
+            slidesPerView: 3,
+            spaceBetween: 30,
+          },
+        }
+      });
+
+      var swiper = new Swiper(".testimonial-swiper", {
+        slidesPerView: 1,
+        spaceBetween: 30,
+        freeMode: true,
+        navigation: {
+          nextEl: ".swiper-button-next",
+          prevEl: ".swiper-button-prev",
         },
-      }
-    });
+        pagination: {
+          el: ".swiper-pagination",
+          clickable: true,
+        },
+      });
 
-    var swiper = new Swiper(".testimonial-swiper", {
-      slidesPerView: 1,
-      spaceBetween: 30,
-      freeMode: true,
-      navigation: {
-        nextEl: ".swiper-button-next",
-        prevEl: ".swiper-button-prev",
-      },
-      pagination: {
-        el: ".swiper-pagination",
-        clickable: true,
-      },
-    });
+      var thumb_slider = new Swiper(".product-thumbnail-slider", {
+        autoplay: true,
+        loop: true,
+        spaceBetween: 8,
+        slidesPerView: 4,
+        freeMode: true,
+        watchSlidesProgress: true,
+      });
 
-    // product single page
-    var thumb_slider = new Swiper(".product-thumbnail-slider", {
-      autoplay: true,
-      loop: true,
-      spaceBetween: 8,
-      slidesPerView: 4,
-      freeMode: true,
-      watchSlidesProgress: true,
-    });
+      var large_slider = new Swiper(".product-large-slider", {
+        autoplay: true,
+        loop: true,
+        spaceBetween: 10,
+        effect: 'fade',
+        thumbs: {
+          swiper: thumb_slider,
+        },
+      });
+    }
 
-    var large_slider = new Swiper(".product-large-slider", {
-      autoplay: true,
-      loop:true,
-      spaceBetween: 10,
-      effect: 'fade',
-      thumbs: {
-        swiper: thumb_slider,
-      },
-    });
-
-
-    initChocolat();
-
+    if (typeof initChocolat === 'function' && typeof Chocolat !== 'undefined') {
+      initChocolat();
+    }
 
   }); // End of a document
 

@@ -96,15 +96,17 @@
     {{-- Chats section --}}
     <section id="chats" class="mb-5">
         <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white border-bottom py-3">
+            <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
                 <h2 class="h5 text-capitalize mb-0">Incoming chats</h2>
+                <a href="{{ route('chatify') }}" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-chat-dots me-1"></i> Open messenger
+                </a>
             </div>
             <div class="card-body">
-                <p class="text-muted mb-0">When tenants message you about a listing, conversations will appear here.</p>
-                <div class="border rounded p-4 text-center text-muted bg-light mt-3">
-                    <i class="bi bi-chat-left-text display-6"></i>
-                    <p class="mt-2 mb-0">No chats yet</p>
-                </div>
+                <p class="text-muted mb-0">When tenants message you about a listing, conversations will appear in the messenger.</p>
+                <a href="{{ route('chatify') }}" class="btn btn-success mt-3">
+                    <i class="bi bi-chat-dots me-1"></i> View all chats
+                </a>
             </div>
         </div>
     </section>

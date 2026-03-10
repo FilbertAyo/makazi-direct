@@ -1,4 +1,4 @@
-@extends('layouts.landlord')
+@extends('layouts.clients.app')
 
 @section('title', 'Landlord Dashboard')
 

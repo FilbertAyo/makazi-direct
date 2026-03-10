@@ -80,7 +80,7 @@
                 <div class="row g-4">
                     @foreach ($properties as $property)
                         <div class="col-md-6 col-lg-4">
-                            <div class="card h-100 border-0 shadow-sm">
+                            <div class="card h-100 border shadow-none">
                                 @if ($property->images->isNotEmpty())
                                     <a href="{{ route('rentals.show', $property) }}">
                                         <img src="{{ $property->images->first()->url }}" class="card-img-top" alt="" style="height: 220px; object-fit: cover;">
@@ -92,7 +92,7 @@
                                         </div>
                                     </a>
                                 @endif
-                                <div class="card-body">
+                                <div class="card-body ">
                                     <div class="d-flex justify-content-between align-items-start gap-2">
                                         <h5 class="card-title mb-1">
                                             <a href="{{ route('rentals.show', $property) }}" class="text-dark text-decoration-none">{{ Str::limit($property->title, 40) }}</a>

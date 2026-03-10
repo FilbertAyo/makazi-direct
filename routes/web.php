@@ -35,6 +35,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('dashboard.tenant');
     })->middleware('role:tenant')->name('tenant.dashboard');
 
+    Route::post('/rentals/{property}/start-chat', [\App\Http\Controllers\Client\Tenant\ChatController::class, 'store'])
+        ->middleware('role:tenant')
+        ->name('tenant.chats.start');
+
     Route::get('/landlord/dashboard', function () {
         return view('clients.dashboard.landlord');
     })->middleware(['role:landlord', 'approved'])->name('landlord.dashboard');

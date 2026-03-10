@@ -11,7 +11,6 @@
                     <i class="bi-facebook pe-4 text-white"></i>
                     <i class="bi-instagram pe-4 text-white"></i>
                     <i class="bi-twitter pe-4 text-white"></i>
-                    <i class="bi-youtube pe-4 text-white"></i>
                 </div>
 
                 <div class="col-md-2">
@@ -53,9 +52,7 @@
                 </div>
             </footer>
         </div>
-
-        <footer class="d-flex flex-wrap justify-content-between align-items-center border-top"></footer>
-
+        <hr class="my-0 border-light">
         <div class="container">
             <footer class="d-flex flex-wrap justify-content-between align-items-center py-2">
                 <div class="col-md-8 d-flex align-items-center">
@@ -63,7 +60,7 @@
                 </div>
                 <div class="col-md-4 d-flex align-items-center">
                     <p class="mb-0 text-white">Developed by:
-                        <a href="https://soscom.co.tz" class="link-primary" target="_blank">
+                        <a href="https://soscom.co.tz" class="text-primary" target="_blank">
                             SOSCOM Technologies
                         </a>
                     </p>

@@ -16,7 +16,7 @@
         <div class="row g-4">
             <div class="col-lg-8">
                 @if ($property->images->isNotEmpty())
-                    <div class="card border-0 shadow-sm mb-4">
+                    <div class="card border shadow-none mb-4">
                         <div id="rentalCarousel" class="carousel slide" data-bs-ride="carousel">
                             <div class="carousel-inner">
                                 @foreach ($property->images as $index => $img)
@@ -38,7 +38,7 @@
                         </div>
                     </div>
                 @else
-                    <div class="card border-0 shadow-sm mb-4">
+                    <div class="card border shadow-none mb-4">
                         <div class="card-body text-center py-5 bg-light text-muted">
                             <i class="bi bi-image display-4"></i>
                             <p class="mt-2 mb-0">No photos</p>
@@ -46,7 +46,7 @@
                     </div>
                 @endif
 
-                <div class="card border-0 shadow-sm mb-4">
+                <div class="card border shadow-none mb-4">
                     <div class="card-header bg-white border-bottom py-3">
                         <h2 class="h5 mb-0">Description</h2>
                     </div>
@@ -61,7 +61,15 @@
             </div>
 
             <div class="col-lg-4">
-                <div class="card border-0 shadow-sm sticky-top mb-4">
+            @if ($property->landlord)
+                    <div class="card border shadow-none">
+                        <div class="card-body">
+                            <h3 class="h6 text-uppercase text-muted mb-2">Listed by</h3>
+                            <p class="mb-0">{{ $property->landlord->name }}</p>
+                        </div>
+                    </div>
+                @endif
+                <div class="card border shadow-none sticky-top mb-4">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <h1 class="h4 mb-0">{{ $property->title }}</h1>
@@ -85,25 +93,61 @@
                             @endif
                         </ul>
 
+                        @if ($errors->any())
+                            <div class="alert alert-danger mb-2 small">
+                                {{ $errors->first() }}
+                            </div>
+                        @endif
                         @auth
-                            <a href="#" class="btn btn-primary w-100 mb-2">Start chat with landlord</a>
+                            @if(auth()->user()->hasRole('tenant'))
+                                <form action="{{ route('tenant.chats.start', $property) }}" method="POST" class="mb-2 chat-start-form">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary w-100 btn-chat-start" id="btn-chat-landlord">
+                                        <i class="bi bi-chat-dots me-1"></i> <span class="btn-text">Chat with landlord</span>
+                                    </button>
+                                </form>
+                            @elseif(auth()->user()->hasRole('landlord') && auth()->id() === $property->landlord_id)
+                                <div class="alert alert-light border mb-2 small text-muted">
+                                    This is your own listing.
+                                </div>
+                            @else
+                                <div class="alert alert-info mb-2 small">
+                                    Only tenants can contact landlords. You are logged in as
+                                    <strong>{{ auth()->user()->getRoleNames()->first() }}</strong>.
+                                </div>
+                            @endif
                         @else
-                            <a href="{{ route('login') }}" class="btn btn-primary w-100 mb-2">Log in to contact landlord</a>
+                            <a href="{{ route('login') }}" class="btn btn-primary w-100 mb-2">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Log in to contact landlord
+                            </a>
                         @endauth
                         <a href="{{ route('rentals.index') }}" class="btn btn-outline-secondary w-100">Back to rentals</a>
                     </div>
                 </div>
 
-                @if ($property->landlord)
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body">
-                            <h3 class="h6 text-uppercase text-muted mb-2">Listed by</h3>
-                            <p class="mb-0">{{ $property->landlord->name }}</p>
-                        </div>
-                    </div>
-                @endif
+               
             </div>
         </div>
     </div>
 </main>
 @endsection
+
+@auth
+    @if(auth()->user()->hasRole('tenant'))
+        @push('scripts')
+        <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var form = document.querySelector('.chat-start-form');
+            var btn  = document.getElementById('btn-chat-landlord');
+            var span = btn ? btn.querySelector('.btn-text') : null;
+            if (form && btn && span) {
+                form.addEventListener('submit', function () {
+                    btn.disabled  = true;
+                    span.textContent = 'Opening chat\u2026';
+                });
+            }
+        });
+        </script>
+        @endpush
+    @endif
+@endauth

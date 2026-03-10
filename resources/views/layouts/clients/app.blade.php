@@ -5,7 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Landlord Dashboard') – {{ config('app.name', 'Makazi Direct') }}</title>
+    @stack('head')
+    <title>@yield('title', 'Dashboard') – {{ config('app.name', 'Makazi Direct') }}</title>
 
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/vendor.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
