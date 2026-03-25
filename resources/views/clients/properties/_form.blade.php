@@ -1,6 +1,15 @@
 @php
     $isEdit = isset($property) && $property->exists;
     $property = $property ?? new \App\Models\Property();
+    $contactTypes = $contactTypes ?? \App\Models\PropertyContact::contactTypes();
+    $existingContacts = old('contacts', $isEdit ? $property->contacts->map(fn ($contact) => [
+        'label' => $contact->label,
+        'type' => $contact->type,
+        'value' => $contact->value,
+    ])->toArray() : []);
+    if ($existingContacts === []) {
+        $existingContacts = [['label' => '', 'type' => \App\Models\PropertyContact::TYPE_PHONE, 'value' => '']];
+    }
 @endphp
 
 <div class="card border-0 shadow-sm mb-4">
@@ -125,6 +134,13 @@
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
+            <div class="col-12">
+                <label for="house_rules" class="form-label">House rules and policies</label>
+                <textarea name="house_rules" id="house_rules" class="form-control @error('house_rules') is-invalid @enderror" rows="4" maxlength="5000" placeholder="e.g. No pets, no loud noise after 10PM, rent due by 5th of each month.">{{ old('house_rules', $property->house_rules ?? '') }}</textarea>
+                @error('house_rules')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
             <div class="col-md-6">
                 <label for="latitude" class="form-label">Latitude</label>
                 <input type="number" name="latitude" id="latitude" class="form-control @error('latitude') is-invalid @enderror"
@@ -155,6 +171,59 @@
 
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-header bg-white border-bottom py-3">
+        <h2 class="h5 text-capitalize mb-0">Property contact details</h2>
+    </div>
+    <div class="card-body">
+        <p class="text-muted small mb-3">Add one or more contact methods that tenants can use after they log in.</p>
+        <div id="contactRows" data-contact-types='@json($contactTypes)' class="d-flex flex-column gap-3">
+            @foreach ($existingContacts as $index => $contact)
+                <div class="row g-2 contact-row">
+                    <div class="col-md-3">
+                        <label class="form-label">Type</label>
+                        <select name="contacts[{{ $index }}][type]" class="form-select @error('contacts.'.$index.'.type') is-invalid @enderror">
+                            @foreach ($contactTypes as $typeValue => $typeLabel)
+                                <option value="{{ $typeValue }}" @selected(($contact['type'] ?? '') === $typeValue)>{{ $typeLabel }}</option>
+                            @endforeach
+                        </select>
+                        @error('contacts.'.$index.'.type')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Label (optional)</label>
+                        <input type="text" name="contacts[{{ $index }}][label]" class="form-control @error('contacts.'.$index.'.label') is-invalid @enderror"
+                               value="{{ $contact['label'] ?? '' }}" maxlength="50" placeholder="e.g. Primary, Office">
+                        @error('contacts.'.$index.'.label')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">Contact value</label>
+                        <input type="text" name="contacts[{{ $index }}][value]" class="form-control @error('contacts.'.$index.'.value') is-invalid @enderror"
+                               value="{{ $contact['value'] ?? '' }}" maxlength="255" placeholder="e.g. +255712345678">
+                        @error('contacts.'.$index.'.value')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="button" class="btn btn-outline-danger w-100 remove-contact-row" title="Remove contact">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+        <button id="addContactRow" type="button" class="btn btn-outline-primary btn-sm mt-3">
+            <i class="bi bi-plus-lg me-1"></i>Add contact
+        </button>
+        @error('contacts')
+            <div class="text-danger small mt-2">{{ $message }}</div>
+        @enderror
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-bottom py-3">
         <h2 class="h5 text-capitalize mb-0">Photos</h2>
     </div>
     <div class="card-body">
@@ -179,3 +248,65 @@
         @enderror
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var contactRows = document.getElementById('contactRows');
+    var addBtn = document.getElementById('addContactRow');
+    if (!contactRows || !addBtn) {
+        return;
+    }
+
+    var typeOptions = JSON.parse(contactRows.dataset.contactTypes || '{}');
+
+    function buildTypeSelect(index) {
+        var options = Object.entries(typeOptions).map(function (entry) {
+            return '<option value="' + entry[0] + '">' + entry[1] + '</option>';
+        }).join('');
+
+        return '<select name="contacts[' + index + '][type]" class="form-select">' + options + '</select>';
+    }
+
+    function refreshIndexes() {
+        var rows = contactRows.querySelectorAll('.contact-row');
+        rows.forEach(function (row, index) {
+            var fields = row.querySelectorAll('input, select');
+            fields.forEach(function (field) {
+                field.name = field.name.replace(/contacts\[\d+\]/, 'contacts[' + index + ']');
+            });
+        });
+    }
+
+    addBtn.addEventListener('click', function () {
+        var index = contactRows.querySelectorAll('.contact-row').length;
+        var row = document.createElement('div');
+        row.className = 'row g-2 contact-row';
+        row.innerHTML = ''
+            + '<div class="col-md-3"><label class="form-label">Type</label>' + buildTypeSelect(index) + '</div>'
+            + '<div class="col-md-3"><label class="form-label">Label (optional)</label><input type="text" name="contacts[' + index + '][label]" class="form-control" maxlength="50" placeholder="e.g. Primary, Office"></div>'
+            + '<div class="col-md-5"><label class="form-label">Contact value</label><input type="text" name="contacts[' + index + '][value]" class="form-control" maxlength="255" placeholder="e.g. +255712345678"></div>'
+            + '<div class="col-md-1 d-flex align-items-end"><button type="button" class="btn btn-outline-danger w-100 remove-contact-row" title="Remove contact"><i class="bi bi-x-lg"></i></button></div>';
+
+        contactRows.appendChild(row);
+    });
+
+    contactRows.addEventListener('click', function (event) {
+        var removeBtn = event.target.closest('.remove-contact-row');
+        if (!removeBtn) {
+            return;
+        }
+        var rows = contactRows.querySelectorAll('.contact-row');
+        if (rows.length === 1) {
+            rows[0].querySelectorAll('input').forEach(function (input) {
+                input.value = '';
+            });
+            rows[0].querySelector('select').selectedIndex = 0;
+            return;
+        }
+        removeBtn.closest('.contact-row').remove();
+        refreshIndexes();
+    });
+});
+</script>
+@endpush

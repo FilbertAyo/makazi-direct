@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\LandlordController as AdminLandlordController;
+use App\Http\Controllers\Admin\PropertyController as AdminPropertyController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Property;
@@ -47,29 +50,35 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('properties', \App\Http\Controllers\Client\Landlord\PropertyController::class);
     });
 
-    Route::get('/admin/dashboard', function () {
-        $userCounts = [
-            'all' => \App\Models\User::count(),
-            'admin' => \App\Models\User::role('admin')->count(),
-            'tenant' => \App\Models\User::role('tenant')->count(),
-            'landlord' => \App\Models\User::role('landlord')->count(),
-        ];
-        $pendingLandlords = \App\Models\User::role('landlord')->where('status', \App\Models\User::STATUS_PENDING)->count();
-
-        return view('admin.dashboard', compact('userCounts', 'pendingLandlords'));
-    })->middleware('role:admin')->name('admin.dashboard');
+    Route::get('/admin/dashboard', AdminDashboardController::class)
+        ->middleware('role:admin')
+        ->name('admin.dashboard');
 
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])
             ->name('users.index');
         Route::get('/landlords/pending', [\App\Http\Controllers\Admin\PendingLandlordController::class, 'index'])
             ->name('landlords.pending');
+        Route::get('/landlords', [AdminLandlordController::class, 'index'])
+            ->name('landlords.index');
+        Route::get('/landlords/{user}', [AdminLandlordController::class, 'show'])
+            ->name('landlords.show');
         Route::post('/landlords/{user}/approve', [\App\Http\Controllers\Admin\PendingLandlordController::class, 'approve'])
             ->name('landlords.approve');
         Route::post('/landlords/{user}/reject', [\App\Http\Controllers\Admin\PendingLandlordController::class, 'reject'])
             ->name('landlords.reject');
         Route::get('/documents/{document}', [\App\Http\Controllers\Admin\PendingLandlordController::class, 'showDocument'])
             ->name('documents.show');
+        Route::get('/properties', [AdminPropertyController::class, 'index'])
+            ->name('properties.index');
+        Route::get('/properties/moderation', [AdminPropertyController::class, 'moderation'])
+            ->name('properties.moderation');
+        Route::get('/properties/{property}', [AdminPropertyController::class, 'show'])
+            ->name('properties.show');
+        Route::post('/properties/{property}/approve', [AdminPropertyController::class, 'approve'])
+            ->name('properties.approve');
+        Route::post('/properties/{property}/unverify', [AdminPropertyController::class, 'unverify'])
+            ->name('properties.unverify');
     });
 });
 

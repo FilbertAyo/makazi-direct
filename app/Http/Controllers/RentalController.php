@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Property;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class RentalController extends Controller
@@ -52,8 +54,27 @@ class RentalController extends Controller
 
     public function show(Property $property): View
     {
-        $property->load(['images', 'landlord']);
+        $property->load(['images', 'landlord', 'contacts']);
+        $canViewFullDetails = Auth::check();
 
-        return view('rentals.show', compact('property'));
+        $visibleContacts = $property->contacts->map(function ($contact) use ($canViewFullDetails) {
+            return [
+                'label' => $contact->label,
+                'type' => $contact->type,
+                'value' => $canViewFullDetails
+                    ? $contact->value
+                    : Property::maskContactValue($contact->value),
+                'is_masked' => ! $canViewFullDetails,
+            ];
+        });
+
+        $teaserDescription = Str::limit((string) $property->description, 220);
+
+        return view('rentals.show', compact(
+            'property',
+            'canViewFullDetails',
+            'visibleContacts',
+            'teaserDescription'
+        ));
     }
 }

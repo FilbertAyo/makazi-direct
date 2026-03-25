@@ -24,8 +24,8 @@ return [
     'routes' => [
         'custom' => env('CHATIFY_CUSTOM_ROUTES', false),
         'prefix' => env('CHATIFY_ROUTES_PREFIX', 'chatify'),
-        // For now we only require login (no email verification yet).
-        'middleware' => ['web', 'auth'],
+        // Tenant-only chat access for property inquiry flows.
+        'middleware' => ['web', 'auth', 'role:tenant'],
         'namespace' => env('CHATIFY_ROUTES_NAMESPACE', 'Chatify\Http\Controllers'),
     ],
     'api_routes' => [

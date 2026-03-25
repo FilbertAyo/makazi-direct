@@ -1,95 +1,91 @@
+@php($breadcrumbTitle = __('Users'))
+
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Users') }}
-        </h2>
+        <div>
+            <h5 class="m-b-10">{{ __('Users') }}</h5>
+            <p class="text-muted mb-0">{{ __('Manage registered users by role and status.') }}</p>
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @if (session('status'))
-                <div class="mb-4 rounded-md bg-green-50 p-4 text-green-800">
-                    {{ session('status') }}
-                </div>
-            @endif
-
-            <!-- Role filter -->
-            <div class="mb-4 flex flex-wrap gap-2">
-                <a href="{{ route('admin.users.index') }}"
-                   class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium {{ $role === null ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                    {{ __('All') }}
-                </a>
-                <a href="{{ route('admin.users.index', ['role' => 'admin']) }}"
-                   class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium {{ $role === 'admin' ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                    {{ __('Admins') }}
-                </a>
-                <a href="{{ route('admin.users.index', ['role' => 'tenant']) }}"
-                   class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium {{ $role === 'tenant' ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                    {{ __('Tenants') }}
-                </a>
-                <a href="{{ route('admin.users.index', ['role' => 'landlord']) }}"
-                   class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium {{ $role === 'landlord' ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                    {{ __('Landlords') }}
-                </a>
+    <div class="card shadow-none border mb-4">
+        <div class="card-body">
+            <h6 class="mb-3">{{ __('Filter by role') }}</h6>
+            <div class="d-flex flex-wrap gap-2">
+            <a href="{{ route('admin.users.index') }}"
+               class="btn btn-sm {{ $role === null ? 'btn-primary' : 'btn-light-secondary' }}">
+                {{ __('All Users') }}
+            </a>
+            <a href="{{ route('admin.users.index', ['role' => 'admin']) }}"
+               class="btn btn-sm {{ $role === 'admin' ? 'btn-primary' : 'btn-light-secondary' }}">
+                {{ __('Admins') }}
+            </a>
+            <a href="{{ route('admin.users.index', ['role' => 'tenant']) }}"
+               class="btn btn-sm {{ $role === 'tenant' ? 'btn-primary' : 'btn-light-secondary' }}">
+                {{ __('Tenants') }}
+            </a>
+            <a href="{{ route('admin.users.index', ['role' => 'landlord']) }}"
+               class="btn btn-sm {{ $role === 'landlord' ? 'btn-primary' : 'btn-light-secondary' }}">
+                {{ __('Landlords') }}
+            </a>
             </div>
-
-            @if ($users->isEmpty())
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900">
-                        {{ $role
-                            ? __('No users found for this role.')
-                            : __('No users yet.') }}
-                    </div>
-                </div>
-            @else
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Name') }}</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Email') }}</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Phone') }}</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Role') }}</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Status') }}</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Registered') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @foreach ($users as $user)
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $user->name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $user->email ?? '—' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $user->phone ?? '—' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            @foreach ($user->roles as $r)
-                                                <span class="inline-flex px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 capitalize">{{ $r->name }}</span>
-                                            @endforeach
-                                            @if ($user->roles->isEmpty())
-                                                —
-                                            @endif
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            <span class="inline-flex px-2 py-0.5 rounded text-xs font-medium
-                                                {{ $user->status === \App\Models\User::STATUS_ACTIVE ? 'bg-green-100 text-green-800' : '' }}
-                                                {{ $user->status === \App\Models\User::STATUS_PENDING ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                                {{ $user->status === \App\Models\User::STATUS_REJECTED ? 'bg-red-100 text-red-800' : '' }}
-                                                {{ !in_array($user->status ?? '', [\App\Models\User::STATUS_ACTIVE, \App\Models\User::STATUS_PENDING, \App\Models\User::STATUS_REJECTED], true) ? 'bg-gray-100 text-gray-800' : '' }}
-                                            ">
-                                                {{ $user->status ?? '—' }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $user->created_at->format('M j, Y') }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="px-6 py-3 border-t border-gray-200">
-                        {{ $users->links() }}
-                    </div>
-                </div>
-            @endif
         </div>
     </div>
+
+    @if ($users->isEmpty())
+        <div class="card shadow-none border">
+            <div class="card-body text-muted">
+                {{ $role ? __('No users found for this role.') : __('No users yet.') }}
+            </div>
+        </div>
+    @else
+        <div class="card shadow-none border tbl-card">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>{{ __('Name') }}</th>
+                            <th>{{ __('Email') }}</th>
+                            <th>{{ __('Phone') }}</th>
+                            <th>{{ __('Role') }}</th>
+                            <th>{{ __('Status') }}</th>
+                            <th>{{ __('Registered') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($users as $user)
+                            <tr>
+                                <td>{{ ($users->currentPage() - 1) * $users->perPage() + $loop->iteration }}</td>
+                                <td class="fw-semibold">{{ $user->name }}</td>
+                                <td>{{ $user->email ?? '—' }}</td>
+                                <td>{{ $user->phone ?? '—' }}</td>
+                                <td>
+                                    @foreach ($user->roles as $r)
+                                        <span class="badge bg-light-primary border border-primary text-primary text-capitalize">{{ $r->name }}</span>
+                                    @endforeach
+                                    @if ($user->roles->isEmpty())
+                                        —
+                                    @endif
+                                </td>
+                                <td>
+                                    <span class="badge
+                                        {{ $user->status === \App\Models\User::STATUS_ACTIVE ? 'bg-light-success border border-success text-success' : '' }}
+                                        {{ $user->status === \App\Models\User::STATUS_PENDING ? 'bg-light-warning border border-warning text-warning' : '' }}
+                                        {{ $user->status === \App\Models\User::STATUS_REJECTED ? 'bg-light-danger border border-danger text-danger' : '' }}
+                                        {{ !in_array($user->status ?? '', [\App\Models\User::STATUS_ACTIVE, \App\Models\User::STATUS_PENDING, \App\Models\User::STATUS_REJECTED], true) ? 'bg-light-secondary border border-secondary text-secondary' : '' }}">
+                                        {{ $user->status ?? '—' }}
+                                    </span>
+                                </td>
+                                <td>{{ $user->created_at->format('M j, Y') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-body border-top">
+                {{ $users->links() }}
+            </div>
+        </div>
+    @endif
 </x-app-layout>

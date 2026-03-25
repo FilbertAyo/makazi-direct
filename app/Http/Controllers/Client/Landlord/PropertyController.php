@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePropertyRequest;
 use App\Http\Requests\UpdatePropertyRequest;
 use App\Models\Property;
-use App\Models\PropertyImage;
+use App\Models\PropertyContact;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -17,7 +18,10 @@ class PropertyController extends Controller
     {
         $this->authorize('viewAny', Property::class);
 
-        $properties = auth()->user()
+        /** @var \App\Models\User $landlord */
+        $landlord = Auth::user();
+
+        $properties = $landlord
             ->properties()
             ->withCount('images')
             ->with(['images' => fn ($q) => $q->orderBy('sort_order')->limit(1)])
@@ -33,12 +37,17 @@ class PropertyController extends Controller
 
         return view('clients.properties.create', [
             'propertyTypes' => Property::propertyTypes(),
+            'contactTypes' => PropertyContact::contactTypes(),
         ]);
     }
 
     public function store(StorePropertyRequest $request): RedirectResponse
     {
-        $property = auth()->user()->properties()->create($request->safe()->except('images'));
+        /** @var \App\Models\User $landlord */
+        $landlord = Auth::user();
+
+        $property = $landlord->properties()->create($request->safe()->except(['images', 'contacts']));
+        $this->syncContacts($property, $request->input('contacts', []));
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $index => $file) {
@@ -59,7 +68,7 @@ class PropertyController extends Controller
     {
         $this->authorize('view', $property);
 
-        $property->load('images');
+        $property->load(['images', 'contacts']);
 
         return view('clients.properties.show', compact('property'));
     }
@@ -68,17 +77,19 @@ class PropertyController extends Controller
     {
         $this->authorize('update', $property);
 
-        $property->load('images');
+        $property->load(['images', 'contacts']);
 
         return view('clients.properties.edit', [
             'property' => $property,
             'propertyTypes' => Property::propertyTypes(),
+            'contactTypes' => PropertyContact::contactTypes(),
         ]);
     }
 
     public function update(UpdatePropertyRequest $request, Property $property): RedirectResponse
     {
-        $property->update($request->safe()->except(['images', 'remove_images']));
+        $property->update($request->safe()->except(['images', 'remove_images', 'contacts']));
+        $this->syncContacts($property, $request->input('contacts', []));
 
         if ($request->filled('remove_images')) {
             $toRemove = $property->images()->whereIn('id', $request->remove_images)->get();
@@ -117,5 +128,34 @@ class PropertyController extends Controller
         return redirect()
             ->route('landlord.properties.index')
             ->with('status', __('Property deleted.'));
+    }
+
+    /**
+     * Replace property contacts with cleaned submitted values.
+     */
+    private function syncContacts(Property $property, array $contacts): void
+    {
+        $rows = collect($contacts)
+            ->map(function ($contact, $index) {
+                $value = trim((string) ($contact['value'] ?? ''));
+                if ($value === '') {
+                    return null;
+                }
+
+                return [
+                    'label' => filled($contact['label'] ?? null) ? trim((string) $contact['label']) : null,
+                    'type' => (string) ($contact['type'] ?? 'phone'),
+                    'value' => $value,
+                    'sort_order' => $index,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+
+        $property->contacts()->delete();
+        if ($rows !== []) {
+            $property->contacts()->createMany($rows);
+        }
     }
 }

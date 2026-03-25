@@ -64,6 +64,11 @@
                         <hr>
                         <p class="mb-0 small text-muted"><strong>Dimensions / room sizes:</strong> {{ $property->dimensions }}</p>
                     @endif
+                    @if ($property->house_rules)
+                        <hr>
+                        <h3 class="h6 mb-2">House rules &amp; policies</h3>
+                        <p class="mb-0">{!! nl2br(e($property->house_rules)) !!}</p>
+                    @endif
                 </div>
             </div>
         </div>
@@ -88,6 +93,23 @@
                             <li class="mb-2"><strong>Location:</strong> {{ $property->latitude }}, {{ $property->longitude }}</li>
                         @endif
                     </ul>
+                </div>
+            </div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h2 class="h6 text-uppercase text-muted mb-3">Contact details</h2>
+                    @if ($property->contacts->isEmpty())
+                        <p class="mb-0 text-muted">No contact details added yet.</p>
+                    @else
+                        <ul class="list-unstyled mb-0">
+                            @foreach ($property->contacts as $contact)
+                                <li class="mb-2">
+                                    <strong>{{ ucfirst($contact->type) }}{{ $contact->label ? ' - '.$contact->label : '' }}:</strong>
+                                    {{ $contact->value }}
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
                 </div>
             </div>
         </div>

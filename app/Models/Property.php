@@ -46,6 +46,7 @@ class Property extends Model
         'has_parking',
         'dimensions',
         'description',
+        'house_rules',
         'latitude',
         'longitude',
         'distance_from_main_road',
@@ -74,8 +75,29 @@ class Property extends Model
         return $this->hasMany(PropertyImage::class)->orderBy('sort_order');
     }
 
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(PropertyContact::class)->orderBy('sort_order');
+    }
+
     public function getPropertyTypeLabelAttribute(): string
     {
         return self::propertyTypes()[$this->property_type] ?? $this->property_type;
+    }
+
+    public static function maskContactValue(string $value): string
+    {
+        $trimmed = trim($value);
+        $length = mb_strlen($trimmed);
+
+        if ($length <= 4) {
+            return str_repeat('*', max($length, 1));
+        }
+
+        $visible = min(2, intdiv($length, 3));
+        $start = mb_substr($trimmed, 0, $visible);
+        $end = mb_substr($trimmed, -$visible);
+
+        return $start.str_repeat('*', max($length - ($visible * 2), 2)).$end;
     }
 }

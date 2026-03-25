@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Property;
+use App\Models\PropertyContact;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -28,9 +29,14 @@ class StorePropertyRequest extends FormRequest
             'has_parking' => ['boolean'],
             'dimensions' => ['nullable', 'string', 'max:2000'],
             'description' => ['nullable', 'string', 'max:5000'],
+            'house_rules' => ['nullable', 'string', 'max:5000'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'distance_from_main_road' => ['nullable', 'string', 'max:255'],
+            'contacts' => ['nullable', 'array', 'max:6'],
+            'contacts.*.label' => ['nullable', 'string', 'max:50'],
+            'contacts.*.type' => ['required_with:contacts.*.value', Rule::in(array_keys(PropertyContact::contactTypes()))],
+            'contacts.*.value' => ['required_with:contacts.*.type', 'string', 'max:255'],
             'images' => ['nullable', 'array', 'max:10'],
             'images.*' => ['image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
         ];

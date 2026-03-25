@@ -51,10 +51,24 @@
                         <h2 class="h5 mb-0">Description</h2>
                     </div>
                     <div class="card-body">
-                        <p class="mb-0">{{ $property->description ?: 'No description provided.' }}</p>
-                        @if ($property->dimensions)
-                            <hr>
-                            <p class="mb-0 small text-muted"><strong>Dimensions / room sizes:</strong> {{ $property->dimensions }}</p>
+                        @if ($canViewFullDetails)
+                            <p class="mb-0">{{ $property->description ?: 'No description provided.' }}</p>
+                            @if ($property->dimensions)
+                                <hr>
+                                <p class="mb-0 small text-muted"><strong>Dimensions / room sizes:</strong> {{ $property->dimensions }}</p>
+                            @endif
+                            @if ($property->house_rules)
+                                <hr>
+                                <h3 class="h6 mb-2">House rules &amp; policies</h3>
+                                <p class="mb-0">{!! nl2br(e($property->house_rules)) !!}</p>
+                            @endif
+                        @else
+                            <p class="mb-3">{{ $teaserDescription ?: 'Log in to view full property details.' }}</p>
+                            <div class="alert alert-info mb-0">
+                                <i class="bi bi-lock me-1"></i>
+                                Full details, house rules, and contact information are available after login.
+                                <a href="{{ route('login') }}" class="alert-link">Log in now</a>.
+                            </div>
                         @endif
                     </div>
                 </div>
@@ -82,16 +96,37 @@
                         <ul class="list-unstyled mb-4">
                             <li class="mb-2"><i class="bi bi-tag me-2 text-muted"></i>{{ $property->property_type_label }}</li>
                             <li class="mb-2"><i class="bi bi-calendar-month me-2 text-muted"></i>Minimum {{ $property->minimum_rent_months }} months</li>
-                            <li class="mb-2"><i class="bi bi-door-open me-2 text-muted"></i>{{ $property->bedrooms }} bedroom(s)</li>
-                            <li class="mb-2"><i class="bi bi-droplet me-2 text-muted"></i>{{ $property->bathrooms }} bathroom(s)</li>
-                            <li class="mb-2"><i class="bi bi-house me-2 text-muted"></i>{{ $property->living_rooms }} living room(s)</li>
-                            <li class="mb-2"><i class="bi bi-egg-fried me-2 text-muted"></i>{{ $property->kitchens }} kitchen(s)</li>
-                            <li class="mb-2"><i class="bi bi-check2-circle me-2 text-muted"></i>Fence: {{ $property->has_fence ? 'Yes' : 'No' }}</li>
-                            <li class="mb-2"><i class="bi bi-car-front me-2 text-muted"></i>Parking: {{ $property->has_parking ? 'Yes' : 'No' }}</li>
-                            @if ($property->distance_from_main_road)
-                                <li class="mb-2"><i class="bi bi-signpost me-2 text-muted"></i>{{ $property->distance_from_main_road }} from main road</li>
+                            @if ($canViewFullDetails)
+                                <li class="mb-2"><i class="bi bi-door-open me-2 text-muted"></i>{{ $property->bedrooms }} bedroom(s)</li>
+                                <li class="mb-2"><i class="bi bi-droplet me-2 text-muted"></i>{{ $property->bathrooms }} bathroom(s)</li>
+                                <li class="mb-2"><i class="bi bi-house me-2 text-muted"></i>{{ $property->living_rooms }} living room(s)</li>
+                                <li class="mb-2"><i class="bi bi-egg-fried me-2 text-muted"></i>{{ $property->kitchens }} kitchen(s)</li>
+                                <li class="mb-2"><i class="bi bi-check2-circle me-2 text-muted"></i>Fence: {{ $property->has_fence ? 'Yes' : 'No' }}</li>
+                                <li class="mb-2"><i class="bi bi-car-front me-2 text-muted"></i>Parking: {{ $property->has_parking ? 'Yes' : 'No' }}</li>
+                                @if ($property->distance_from_main_road)
+                                    <li class="mb-2"><i class="bi bi-signpost me-2 text-muted"></i>{{ $property->distance_from_main_road }} from main road</li>
+                                @endif
+                            @else
+                                <li class="mb-2 text-muted"><i class="bi bi-lock me-2"></i>Room features unlock after login</li>
                             @endif
                         </ul>
+
+                        <h3 class="h6 text-uppercase text-muted mb-2">Contact details</h3>
+                        @if ($visibleContacts->isEmpty())
+                            <p class="small text-muted mb-3">No contact details have been added yet.</p>
+                        @else
+                            <ul class="list-unstyled mb-3">
+                                @foreach ($visibleContacts as $contact)
+                                    <li class="mb-2 small">
+                                        <strong>{{ ucfirst($contact['type']) }}{{ $contact['label'] ? ' - '.$contact['label'] : '' }}:</strong>
+                                        {{ $contact['value'] }}
+                                        @if ($contact['is_masked'])
+                                            <i class="bi bi-lock ms-1 text-muted" title="Log in to reveal full contact"></i>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
 
                         @if ($errors->any())
                             <div class="alert alert-danger mb-2 small">
@@ -118,7 +153,7 @@
                             @endif
                         @else
                             <a href="{{ route('login') }}" class="btn btn-primary w-100 mb-2">
-                                <i class="bi bi-box-arrow-in-right me-1"></i> Log in to contact landlord
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Log in to unlock full details
                             </a>
                         @endauth
                         <a href="{{ route('rentals.index') }}" class="btn btn-outline-secondary w-100">Back to rentals</a>
